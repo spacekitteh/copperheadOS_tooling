@@ -1,5 +1,5 @@
 { pkgs ? import <nixpkgs> {}, stdenv ? 
-pkgs.stdenv}:
+pkgs.stdenv, fetchgit ? pkgs.fetchgit}:
 
 let
    jdk = pkgs.jdk8.overrideDerivation (attrs: {
@@ -71,13 +71,27 @@ let
       export USE_CCACHE=1
       export CCACHE_HARDLINK=1
       chrt -b -p 0 $$
-#      source ./nougat/build/envsetup.sh
     '';
   };
 in   #fhs.env 
  stdenv.mkDerivation { 
   name="test-shell";
   nativeBuildInputs = [fhs];
+  buildType = "release";
+  repoSrc = fetchgit {
+    url = https://github.com/spacekitteh/git-repo.git;
+    rev = "abb5aac8eace33ff26dd376375a60be8d0096275";
+    sha256 = "123cgay20cd5jsgmjcp1s6srh8gqq194ydqgjb3cvm3yqs14qmaf";
+  };
+  localManifests = fetchgit {
+    url = "https://github.com/spacekitteh/copperheadOS_local_manifests";
+    rev = "0f59342308cc444c80a7d389b2cc700ee63b6cd4";
+    sha256 = "1yvj1yzhdfami093ms649k513yknz3c7vg8x2srwgkyin971x31i";
+  };
+#  copperheadOSsrc = "copperhead-os";
+  userType = "user";
+  buildTag = "N4F26T.2017.03.13.18.50.01";
+  model = "marlin"; ### TODO
   builder = ./builder.sh;
 }
 

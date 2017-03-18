@@ -1,4 +1,5 @@
-{ pkgs ? import <nixpkgs> {}}:
+{ pkgs ? import <nixpkgs> {}, stdenv ? 
+pkgs.stdenv}:
 
 let
    jdk = pkgs.jdk8.overrideDerivation (attrs: {
@@ -16,39 +17,28 @@ let
      wantedPkgs =  pkgs: with pkgs;
       [ git
         gitRepo
-        gnupg1compat
         python2
-        tmux
+	bash-completion
         curl
 	autoconf
-        strace
-        file
-#        valgrind
-        cscope        
-#        clang
-#        lldb
-	expat.dev
+#	expat.dev
         procps
-        nano
         libressl
         gnumake
         patch
         binutils
-        nettools
+#        nettools
         rsync
         androidenv.platformTools
         androidsdk
         androidenv.buildTools
-#        androidenv.androidndk
-#        androidenv.supportRepository
         androidenv.platforms.platform_25
         ncurses5
         jdk
         schedtool
         utillinux
+	gradle
         m4
-        apktool
-        gperf
         perl	
         libxml2
         zip
@@ -59,9 +49,6 @@ let
         pythonPackages.flake8
         lzop
         bc
-        which
-        gcc
-        gdb
    ];
   fhs = pkgs.buildFHSUserEnv {
     name = "android-env";
@@ -70,17 +57,11 @@ let
       [ zlib
       ];
     extraOutputsToInstall = [ "dev" ];
-/*    extraInstallCommands = ''
-      cd ${current-repo}
-      source build/envsetup.sh
-      chrt -b -p 0 $$
-      choosecombo release aosp_marlin user
-      make target-files-package -j3
-    ''; */
 
     profile = ''
+
       export ANDROID_JAVA_HOME=${jdk.home}
-      export ANDROID_HOME=./.android
+#      export ANDROID_HOME=./.android
       export LANG=C
       unset _JAVA_OPTIONS
       unset JAVA_HOME
@@ -90,6 +71,13 @@ let
       export USE_CCACHE=1
       export CCACHE_HARDLINK=1
       chrt -b -p 0 $$
+#      source ./nougat/build/envsetup.sh
     '';
   };
-in fhs.env 
+in   #fhs.env 
+ stdenv.mkDerivation { 
+  name="test-shell";
+  nativeBuildInputs = [fhs];
+  builder = ./builder.sh;
+}
+
